@@ -24,6 +24,7 @@ def command(func):
 
 TEST_PKGS = ['GitPython==0.3.2.RC1',
              'pytest-cov',
+             'pylint',
              'behave',
              'selenium'
 ]
