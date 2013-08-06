@@ -77,7 +77,7 @@ def test(args):
     proc.exe(py_test)
 
     pylint = ['pylint', '-f', 'parseable'] + pkgs
-    pylint_out = proc.read(pylint)
+    pylint_out = proc.read(pylint, check_exit_code=False)
     open('pylint_out', 'w').write(pylint_out)
 
     proc.exe(['coverage', 'html'])
