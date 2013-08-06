@@ -23,10 +23,11 @@ def command(func):
 
 
 TEST_PKGS = ['GitPython==0.3.2.RC1',
-             'pytest-cov',
-             'pylint',
-             'behave',
-             'selenium'
+             'coverage==3.6',
+             'pytest-cov==1.6',
+             'pylint==0.28.0',
+             'behave==1.2.3',
+             'selenium==2.33.0'
 ]
 
 
@@ -48,7 +49,6 @@ def get_python_interpreter(args):
     if 'PYTHON_EXE' in os.environ:
         return os.environ['PYTHON_EXE']
     return 'python'
-
 
 
 @command
