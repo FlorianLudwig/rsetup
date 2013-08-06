@@ -77,8 +77,10 @@ def test(args):
     proc.exe(py_test)
 
     pylint = ['pylint', '-f', 'parseable'] + pkgs
+    # maybe check pylint return code
+    # http://lists.logilab.org/pipermail/python-projects/2009-November/002068.html
     pylint_out = proc.read(pylint, check_exit_code=False)
-    open('pylint_out', 'w').write(pylint_out)
+    open('pylint.out', 'w').write(pylint_out)
 
     proc.exe(['coverage', 'html'])
 test.parser.add_argument('--ci', action='store_true',
