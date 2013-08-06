@@ -70,7 +70,7 @@ def test(args):
     pkgs = set(pkg.split('.')[0] for pkg in pkgs)
     pkgs = list(pkgs)
 
-    py_test = ['py.test', '--cov' '.']
+    py_test = ['py.test', '--cov', '.']
     if args.ci:
         py_test += ['--cov-report', 'xml', '--junitxml=junit.xml']
     proc.exe(py_test)
