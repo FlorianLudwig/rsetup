@@ -1,9 +1,11 @@
 """rook virtual env control"""
 import os
+import sys
 import logging
 import argparse
 import glob
 import shutil
+import imp
 
 import setuptools
 import subprocess
@@ -27,20 +29,25 @@ TEST_PKGS = ['GitPython==0.3.2.RC1',
              'pytest-cov==1.6',
              'pylint==0.28.0',
              'behave==1.2.3',
-             'selenium==2.33.0'
-]
+             'selenium==2.33.0']
 
 
 def get_setup_data(path):
     data = {}
 
     old_setup = setuptools.setup
+    old_modules = sys.modules.keys()
 
     def s(**kwargs):
         data.update(kwargs)
 
     setuptools.setup = s
-    exec compile(open(path).read(), path, 'exec') in {'__file__': path}, {}
+    imp.load_source('fake-load-setup-py', path)
+
+    for module in sys.modules.keys():
+        if module not in old_modules:
+            del sys.modules[module]
+
     setuptools.setup = old_setup
     return data
 
