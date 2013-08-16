@@ -5,23 +5,12 @@ import logging
 import argparse
 import glob
 import shutil
+import subprocess as sp
 import imp
 
 import setuptools
 import subprocess
-from rsetup import proc
-
-
-ARG_PARSER = argparse.ArgumentParser(description=__doc__,
-                                     formatter_class=argparse.RawTextHelpFormatter)
-SUB_PARSER = ARG_PARSER.add_subparsers(help='Command help')
-
-
-def command(func):
-    """Decorator for CLI exposed functions"""
-    func.parser = SUB_PARSER.add_parser(func.func_name, help=func.__doc__)
-    func.parser.set_defaults(func=func)
-    return func
+from rsetup import proc, config
 
 
 TEST_PKGS = ['GitPython==0.3.2.RC1',
@@ -30,6 +19,18 @@ TEST_PKGS = ['GitPython==0.3.2.RC1',
              'pylint==0.28.0',
              'behave==1.2.3',
              'selenium==2.33.0']
+
+ARG_PARSER = argparse.ArgumentParser(description=__doc__,
+                                     formatter_class=argparse.RawTextHelpFormatter)
+SUB_PARSER = ARG_PARSER.add_subparsers(help='Command help')
+LOG = logging.getLogger(__name__)
+
+
+def command(func):
+    """Decorator for CLI exposed functions"""
+    func.parser = SUB_PARSER.add_parser(func.func_name, help=func.__doc__)
+    func.parser.set_defaults(func=func)
+    return func
 
 
 def get_setup_data(path):
@@ -60,12 +61,11 @@ def get_python_interpreter(args):
 
 @command
 def sdist(args):
-    python = get_python_interpreter(args)
     if os.path.exists('dist'):
         shutil.rmtree('dist')
+    python = get_python_interpreter(args)
     proc.exe([python, 'setup.py', 'sdist', '--dev'])
-    if args.ci:
-        proc.exe(['pip', 'install'] + glob.glob('dist/*.tar.gz'))
+
 
 sdist.parser.add_argument('--ci', action='store_true',
                           help='running in CI context')
@@ -109,6 +109,15 @@ setup.parser.add_argument('--ci', action='store_true',
                           help='running in CI context')
 
 
+@command
+def ci(args):
+    args.ci = True
+    setup(args)
+    sdist(args)
+    proc.exe(['pip', 'install'] + glob.glob('dist/*.tar.gz'))
+    test(args)
+
+
 def rve():
     log_level = os.environ.get('LOG_LEVEL', 'INFO')
     logging.basicConfig(level=getattr(logging, log_level),
@@ -116,4 +125,8 @@ def rve():
                         datefmt='%Y-%m-%d %H:%M:%S')
 
     args = ARG_PARSER.parse_args()
+
+    args.git_root = proc.read('git', 'rev-parse', '--show-toplevel').strip()
+    args.cfg = config.load_config('rsetup', extra_files=args.git_root + '/jenkins.cfg')
+
     args.func(args)
