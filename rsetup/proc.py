@@ -16,13 +16,12 @@ def read(*args, **kwargs):
     proc = subprocess.Popen(args, env=os.environ, stdout=subprocess.PIPE)
     stdout = proc.stdout.read()
     exit_code = proc.wait()
-    if exit_code != 0:
+    if exit_code != 0 and kwargs.get('exit_on_error', False):
         LOG.error('FAILED')
         LOG.error(' cmd: ' + cmd)
         LOG.error(' cwd: ' + os.path.abspath('.'))
         LOG.error(' exit code: ' + str(exit_code))
-        if kwargs.get('exit_on_error', False):
-            sys.exit(exit_code)
+        sys.exit(exit_code)
     return stdout
 
 
