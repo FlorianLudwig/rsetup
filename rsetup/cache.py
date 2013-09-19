@@ -74,7 +74,7 @@ def get(target):
                 if not os.path.exists(os.path.join(CACHE_DIR, target['name'], dirname)):
                     os.mkdir(os.path.join(CACHE_DIR, target['name'], dirname))
                     fd = open(os.path.join(CACHE_DIR, target['name'], name), "w")
-                    shutil.copyfileobj(zfile.read(name), fd)
+                    shutil.copyfileobj(zfile, fd)
         # TODO .tar.gz
         elif cache_path.endswith('.gz'):
             import gzip
