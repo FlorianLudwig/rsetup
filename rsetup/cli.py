@@ -19,7 +19,8 @@ TEST_PKGS = ['GitPython==0.3.2.RC1',
              'pytest-cov==1.6',
              'pylint==0.28.0',
              'behave==1.2.3',
-             'selenium==2.33.0']
+             'selenium==2.33.0',
+             'rbehave']
 
 ARG_PARSER = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawTextHelpFormatter)
