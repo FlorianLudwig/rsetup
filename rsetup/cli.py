@@ -83,8 +83,10 @@ def test(args):
         py_test = ['py.test', '--cov', '.']
         if args.ci:
             py_test += ['--cov-report', 'xml', '--junitxml=junit.xml']
-            proc.exe(['coverage', 'html'])
+
         proc.exe(py_test)
+        if args.ci:
+            proc.exe(['coverage', 'html'])
 
     if args.cfg['test.pylint']:
         pylint = ['pylint', '-f', 'parseable'] + pkgs
