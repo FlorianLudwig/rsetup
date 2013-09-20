@@ -135,7 +135,7 @@ def rve():
     args = ARG_PARSER.parse_args()
     args.git_root = proc.read('git', 'rev-parse', '--show-toplevel').strip()
     args.cfg = {'test':
-                    ['pytest', 'pylint']
+                    ['pytest', 'pylint'],
                 'test.pytest': True,
                 'test.pylint': True}
 
