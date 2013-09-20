@@ -121,7 +121,9 @@ def ci(args):
     args.ci = True
 
     # read config
+    LOG.info('Working path %s', os.path.abspath('.'))
     if os.path.exists('.ci.yml'):
+        LOG.info('loaded .ci.yml')
         args.cfg.update(yaml.load(open('.ci.yml')))
 
     setup(args)
