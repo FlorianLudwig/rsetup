@@ -19,7 +19,7 @@ setup(
     version='0.0.1' + VERSION_SUFFIX,
     author='Grey Rook Entertainment',
     packages=find_packages(),
-    install_requires=['configobj'],
+    install_requires=['configobj', 'PyYaml'],
     entry_points={
         'console_scripts': [
             'rve = rsetup.cli:rve',
