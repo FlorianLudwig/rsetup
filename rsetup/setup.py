@@ -40,6 +40,7 @@ def sdist_with_version_suffic(suffix):
             setup_py = open(base_dir + '/setup.py').read()
             if not "\nVERSION_SUFFIX = ''\n" in setup_py:
                 raise Exception('Variable for version suffix is missing.')
+            os.unlink(base_dir + '/setup.py')
             setup_py = setup_py.replace("\nVERSION_SUFFIX = ''\n", "\nVERSION_SUFFIX = {}\n".format(repr(suffix)))
             f = open(base_dir + '/setup.py', 'w')
             f.write(setup_py)
