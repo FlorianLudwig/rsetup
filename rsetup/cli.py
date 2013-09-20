@@ -8,6 +8,7 @@ import shutil
 import subprocess as sp
 import imp
 
+import yaml
 import setuptools
 import subprocess
 from rsetup import proc, config
@@ -78,16 +79,18 @@ def test(args):
     pkgs = set(pkg.split('.')[0] for pkg in pkgs)
     pkgs = list(pkgs)
 
-    py_test = ['py.test', '--cov', '.']
-    if args.ci:
-        py_test += ['--cov-report', 'xml', '--junitxml=junit.xml']
-    proc.exe(py_test)
+    if args.cfg['test.pytest']:
+        py_test = ['py.test', '--cov', '.']
+        if args.ci:
+            py_test += ['--cov-report', 'xml', '--junitxml=junit.xml']
+        proc.exe(py_test)
 
-    pylint = ['pylint', '-f', 'parseable'] + pkgs
-    # maybe check pylint return code
-    # http://lists.logilab.org/pipermail/python-projects/2009-November/002068.html
-    pylint_out = proc.read(pylint, check_exit_code=False)
-    open('pylint.out', 'w').write(pylint_out)
+    if args.cfg['test.pylint']:
+        pylint = ['pylint', '-f', 'parseable'] + pkgs
+        # maybe check pylint return code
+        # http://lists.logilab.org/pipermail/python-projects/2009-November/002068.html
+        pylint_out = proc.read(pylint, check_exit_code=False)
+        open('pylint.out', 'w').write(pylint_out)
 
     proc.exe(['coverage', 'html'])
 test.parser.add_argument('--ci', action='store_true',
@@ -112,6 +115,11 @@ setup.parser.add_argument('--ci', action='store_true',
 @command
 def ci(args):
     args.ci = True
+
+    # read config
+    if os.path.exists('.ci.yml'):
+        args.cfg.update(yaml.load(open('.ci.yml')))
+
     setup(args)
     sdist(args)
     proc.exe(['pip', 'install'] + glob.glob('dist/*.tar.gz'))
@@ -125,8 +133,10 @@ def rve():
                         datefmt='%Y-%m-%d %H:%M:%S')
 
     args = ARG_PARSER.parse_args()
-
     args.git_root = proc.read('git', 'rev-parse', '--show-toplevel').strip()
-    args.cfg = config.load_config('rsetup', extra_files=args.git_root + '/jenkins.cfg')
+    args.cfg = {'test':
+                    ['pytest', 'pylint']
+                'test.pytest': True,
+                'test.pylint': True}
 
     args.func(args)
