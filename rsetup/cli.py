@@ -19,8 +19,7 @@ TEST_PKGS = ['GitPython==0.3.2.RC1',
              'pytest-cov==1.6',
              'pylint==0.28.0',
              'behave==1.2.3',
-             'selenium==2.33.0',
-             'rbehave']
+             'selenium==2.33.0']
 
 ARG_PARSER = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawTextHelpFormatter)
@@ -101,7 +100,10 @@ test.parser.add_argument('--ci', action='store_true',
 
 @command
 def setup(args):
-    p = subprocess.Popen(['pip', 'install'] + TEST_PKGS)
+    pkgs = TEST_PKGS[:]
+    if args.cfg['test.behave']:
+        pkgs.append('rbehave')
+    p = subprocess.Popen(['pip', 'install'] + pkgs)
     p.wait()
 
     pkgs = proc.read(['pip', 'freeze'])
@@ -139,6 +141,7 @@ def rve():
     args.cfg = {'test':
                     ['pytest', 'pylint'],
                 'test.pytest': True,
-                'test.pylint': True}
+                'test.pylint': True,
+                'test.behave': True}
 
     args.func(args)
