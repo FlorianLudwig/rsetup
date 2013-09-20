@@ -6,7 +6,7 @@ from setuptools import setup, find_packages
 
 
 BASE_PATH = os.path.dirname(os.path.abspath(__file__))
-VERSION_SUFFIX = '.git20130806113033'
+VERSION_SUFFIX = ''
 
 
 if '--dev' in sys.argv:
