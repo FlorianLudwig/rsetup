@@ -83,6 +83,7 @@ def test(args):
         py_test = ['py.test', '--cov', '.']
         if args.ci:
             py_test += ['--cov-report', 'xml', '--junitxml=junit.xml']
+            proc.exe(['coverage', 'html'])
         proc.exe(py_test)
 
     if args.cfg['test.pylint']:
@@ -92,7 +93,7 @@ def test(args):
         pylint_out = proc.read(pylint, check_exit_code=False)
         open('pylint.out', 'w').write(pylint_out)
 
-    proc.exe(['coverage', 'html'])
+
 test.parser.add_argument('--ci', action='store_true',
                          help='running in CI context')
 
