@@ -102,7 +102,7 @@ test.parser.add_argument('--ci', action='store_true',
 def setup(args):
     pkgs = TEST_PKGS[:]
     if args.cfg['test.behave']:
-        pkgs.append('rbehave')
+        pkgs.append('rbehave>=0.0.0.git0')
     p = subprocess.Popen(['pip', 'install'] + pkgs)
     p.wait()
 
