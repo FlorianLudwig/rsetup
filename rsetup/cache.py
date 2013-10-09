@@ -6,6 +6,9 @@ import os
 import hashlib
 import urllib2
 import shutil
+import logging
+
+LOG = logging.getLogger(__name__)
 
 
 def chmod_chromedriver(dir):
@@ -28,7 +31,7 @@ KNOWN = {
     },
     'GeoLiteCity.dat': {
         'url': 'http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz',
-        'md5sum': 'af415640647b0f676abf012096ee9718',
+        'md5sum': '840eb6ab24ddfb8ad63a79a12ef2e65e',
         'unzip': True
     }
 }
@@ -57,6 +60,8 @@ def get(target):
             check = hashlib.md5(open(cache_path).read()).hexdigest()
             if check == target.get('md5sum'):
                 return return_path
+            else:
+                LOG.warning("Different md5 sums for file '{}' causing new download".format(target['name']))
         else:
             return return_path
 
