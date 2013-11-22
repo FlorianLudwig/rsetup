@@ -31,7 +31,7 @@ KNOWN = {
     },
     'GeoLiteCity.dat': {
         'url': 'http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz',
-        'md5sum': '840eb6ab24ddfb8ad63a79a12ef2e65e',
+        'md5sum': 'fde6e82ee2411d67f2b9b03b75205dbd',
         'unzip': True
     }
 }
