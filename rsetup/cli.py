@@ -7,6 +7,7 @@ import glob
 import shutil
 import subprocess as sp
 import imp
+import stat
 
 import yaml
 import setuptools
@@ -130,6 +131,34 @@ def ci(args):
     sdist(args)
     proc.exe(['pip', 'install'] + glob.glob('dist/*.tar.gz'))
     test(args)
+
+@command
+def initve(args):
+    """initilize virtual env with rsetup default configuration"""
+    if not 'VIRTUAL_ENV' in os.environ:
+        LOG.error('mist be run inside active virtual env')
+        return
+    run_script = """#!{ve_path}/bin/python
+
+VIRTUAL_ENV = '{ve_path}'
+
+import os
+import sys
+
+os.environ['VIRTUAL_ENV'] = VIRTUAL_ENV
+os.environ['PATH'] = VIRTUAL_ENV + '/bin:' + os.environ['PATH']
+
+print 'running in ve ' + VIRTUAL_ENV
+print sys.argv[1], sys.argv[2:]
+sys.stdout.flush()
+os.execvpe(sys.argv[1], sys.argv[1:], os.environ)
+    """
+    run_script = run_script.format(ve_path=os.environ['VIRTUAL_ENV'])
+    run_script_path = os.path.join(os.environ['VIRTUAL_ENV'], 'run')
+    if os.path.exists(run_script_path):
+        os.unlink(run_script_path)
+    open(run_script_path, 'w').write(run_script)
+    os.chmod(run_script_path, stat.S_IEXEC | stat.S_IREAD | stat.S_IWUSR)
 
 
 def rve():
