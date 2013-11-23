@@ -156,7 +156,7 @@ sys.stdout.flush()
 os.execvpe(sys.argv[1], sys.argv[1:], os.environ)
     """
     run_script = run_script.format(ve_path=os.environ['VIRTUAL_ENV'])
-    run_script_path = os.path.join(os.environ['VIRTUAL_ENV'], 'run')
+    run_script_path = os.path.join(os.environ['VIRTUAL_ENV'], 'bin', 'run')
     if os.path.exists(run_script_path):
         os.unlink(run_script_path)
     open(run_script_path, 'w').write(run_script)
