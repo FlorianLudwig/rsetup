@@ -39,6 +39,15 @@ def command(func):
 
 
 def get_setup_data(path):
+    """get the arguments of setup() call inside a setup.py by fake loading it
+
+    The only way to get data out of a setup.py is by executing it.  The setuptools
+    is mocked to extract the desired information
+
+    :param path: path to the setup.py file
+    :type path: str
+    :rtype: dict
+    """
     data = {}
 
     old_setup = setuptools.setup
@@ -56,6 +65,18 @@ def get_setup_data(path):
 
     setuptools.setup = old_setup
     return data
+
+
+def get_module_path(name):
+    """get the path of the module given by name
+
+    This imports the named module and therefore might have side effects
+
+    :param name: Name of the module
+    :type name: str
+    :rtype: str
+    """
+    return os.path.dirname(__import__(name).__file__)
 
 
 def get_python_interpreter(args):
@@ -85,11 +106,12 @@ def test(args):
 
     if args.cfg['test.pytest']:
         LOG.info('running py.test')
-        py_test = ['py.test', '--cov', '.']
-        if args.ci:
-            py_test += ['--cov-report', 'xml', '--junitxml=junit.xml']
+        for pkg in pkgs:
+            py_test = ['py.test', '--cov', get_module_path(pkg)]
+            if args.ci:
+                py_test += ['--cov-report', 'xml', '--junitxml=junit.xml']
 
-        proc.exe(py_test)
+            proc.exe(py_test)
         if args.ci:
             proc.exe(['coverage', 'html'])
 
@@ -103,6 +125,8 @@ def test(args):
 
     if args.cfg['test.behave']:
         LOG.info('running behave')
+        for path in args.cfg['test.behave.features']:
+            proc.exe(['behave', path])
 
 
 test.parser.add_argument('--ci', action='store_true',
@@ -173,6 +197,7 @@ os.execvpe(sys.argv[1], sys.argv[1:], os.environ)
 
 
 def rve():
+    """rve command line tool entry point"""
     log_level = os.environ.get('LOG_LEVEL', 'INFO')
     logging.basicConfig(level=getattr(logging, log_level),
                         format='%(asctime)s %(name)s[%(levelname)s] %(message)s',
@@ -184,7 +209,9 @@ def rve():
                     ['pytest', 'pylint'],
                 'test.pytest': False,
                 'test.pylint': False,
-                'test.behave': False}
+                'test.behave': False,
+                'test.behave.features': set()
+                }
 
     # auto detect tests to run
     for dirpath, dirnames, filenames in os.walk('.'):
@@ -193,6 +220,7 @@ def rve():
                 args.cfg['test.pylint'] = True
             elif fname.endswith('.feature'):
                 args.cfg['test.behave'] = True
+                args.cfg['test.behave.features'].add(dirpath)
 
             if fname.startswith('test_') and fname.endswith('.py'):
                 args.cfg['test.pytest'] = True
