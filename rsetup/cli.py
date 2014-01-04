@@ -1,4 +1,6 @@
 """rook virtual env control"""
+import atexit
+import tempfile
 import os
 import sys
 import re
@@ -23,7 +25,8 @@ TEST_PKGS = ['GitPython==0.3.2.RC1',
              'pytest-cov==1.6',
              'pylint==0.28.0',
              'behave==1.2.3',
-             'selenium==2.33.0']
+             'selenium==2.33.0',
+             'tox']
 
 ARG_PARSER = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawTextHelpFormatter)
@@ -87,11 +90,18 @@ def get_python_interpreter(args):
 
 @command
 def sdist(args):
+    """create source distribution
+
+    returns path
+    :rtype: str
+    """
     if os.path.exists('dist'):
         shutil.rmtree('dist')
     python = get_python_interpreter(args)
     proc.exe([python, 'setup.py', 'sdist', '--dev'])
-
+    dist = os.listdir('dist')
+    assert len(dist) == 1
+    return os.path.abspath('dist/' + dist[0])
 
 sdist.parser.add_argument('--ci', action='store_true',
                           help='running in CI context')
@@ -107,9 +117,10 @@ def test(args):
     if args.cfg['test.pytest']:
         LOG.info('running py.test')
         for pkg in pkgs:
-            py_test = ['py.test', '--cov', get_module_path(pkg)]
+            py_test = ['py.test', '--cov', pkg]
             if args.ci:
                 py_test += ['--cov-report', 'xml', '--junitxml=junit.xml']
+            py_test.append(pkg)
 
             proc.exe(py_test)
         if args.ci:
@@ -127,7 +138,6 @@ def test(args):
         LOG.info('running behave')
         for path in args.cfg['test.behave.features']:
             proc.exe(['behave', path])
-
 
 test.parser.add_argument('--ci', action='store_true',
                          help='running in CI context')
@@ -162,9 +172,35 @@ def ci(args):
         args.cfg.update(yaml.load(open('.ci.yml')))
 
     setup(args)
-    sdist(args)
+    dist = sdist(args)
+
+    if os.path.exists('tox.ini'):
+        print ("package tox.ini cannot be handled at this time")
+
+    tox = open('tox.ini', 'w')
+    tox.write("""[tox]
+envlist = {}
+
+[testenv]
+commands =
+  pip install -e /home/work/.virtualenvs/testit/src/rsetup
+  rve setup --ci
+  rve test --ci
+""".format(args.cfg['envlist']))
+    tox.close()
+    proc.exe(['tox', '--installpkg', dist])
+
+
+def create_test_ve(args):
+    """create a virtual env to run tests in"""
+    ve_path = tempfile.mkdtemp()
+    proc.exe(['virtual'])
     proc.exe(['pip', 'install'] + glob.glob('dist/*.tar.gz'))
-    test(args)
+
+    def rm_test_ve():
+        shutil.rmtree(ve_path)
+    atexit.register(rm_test_ve)
+    return ve_path
 
 
 @command
@@ -205,12 +241,11 @@ def rve():
 
     args = ARG_PARSER.parse_args()
     args.git_root = proc.read('git', 'rev-parse', '--show-toplevel').strip()
-    args.cfg = {'test':
-                    ['pytest', 'pylint'],
-                'test.pytest': False,
+    args.cfg = {'test.pytest': False,
                 'test.pylint': False,
                 'test.behave': False,
-                'test.behave.features': set()
+                'test.behave.features': set(),
+                'envlist': 'py27'
                 }
 
     # auto detect tests to run
