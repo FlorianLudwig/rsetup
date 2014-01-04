@@ -173,8 +173,18 @@ def rve():
     args.git_root = proc.read('git', 'rev-parse', '--show-toplevel').strip()
     args.cfg = {'test':
                     ['pytest', 'pylint'],
-                'test.pytest': True,
-                'test.pylint': True,
-                'test.behave': True}
+                'test.pytest': False,
+                'test.pylint': False,
+                'test.behave': False}
+
+    # auto detect tests to run
+    for dirpath, dirnames, filenames in os.walk('.'):
+        for fname in filenames:
+            if fname.endswith('.py'):
+                args.cfg['test.pylint'] = True
+            elif fname.endswith('.feature'):
+                args.cfg['test.behave'] = True
+            elif fname.startswith('test_') and fname.endswith('.py'):
+                args.cfg['test.pytest'] = True
 
     args.func(args)
