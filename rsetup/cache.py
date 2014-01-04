@@ -23,6 +23,10 @@ KNOWN = {
         'url': 'http://selenium.googlecode.com/files/selenium-server-standalone-2.35.0.jar',
         'md5sum': 'bc34d2b9727c1ac3aa45fe98dd666cbf'
     },
+    'selenium-server-standalone-2.39.0.jar': {
+        'url': 'http://selenium.googlecode.com/files/selenium-server-standalone-2.39.0.jar',
+        'md5sum': '7c2d1e12c1a9e445193967314fa72d85'
+    },
     'chromedriver_linux64_2.3': {
         'url': 'https://chromedriver.googlecode.com/files/chromedriver_linux64_2.3.zip',
         'md5sum': '1a816cc185a15af4d450805629790b0a',
