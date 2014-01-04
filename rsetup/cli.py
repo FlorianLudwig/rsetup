@@ -1,6 +1,7 @@
 """rook virtual env control"""
 import os
 import sys
+import re
 import logging
 import argparse
 import glob
@@ -14,6 +15,8 @@ import setuptools
 import subprocess
 from rsetup import proc, config
 
+
+PACKAGE_NAME = re.compile('[a-zA-Z0-9-_]{1,64}$')
 
 TEST_PKGS = ['GitPython==0.3.2.RC1',
              'coverage==3.6',
@@ -81,6 +84,7 @@ def test(args):
     pkgs = list(pkgs)
 
     if args.cfg['test.pytest']:
+        LOG.info('running py.test')
         py_test = ['py.test', '--cov', '.']
         if args.ci:
             py_test += ['--cov-report', 'xml', '--junitxml=junit.xml']
@@ -90,11 +94,15 @@ def test(args):
             proc.exe(['coverage', 'html'])
 
     if args.cfg['test.pylint']:
+        LOG.info('running pylint')
         pylint = ['pylint', '-f', 'parseable'] + pkgs
         # maybe check pylint return code
         # http://lists.logilab.org/pipermail/python-projects/2009-November/002068.html
         pylint_out = proc.read(pylint, check_exit_code=False)
         open('pylint.out', 'w').write(pylint_out)
+
+    if args.cfg['test.behave']:
+        LOG.info('running behave')
 
 
 test.parser.add_argument('--ci', action='store_true',
@@ -133,6 +141,7 @@ def ci(args):
     sdist(args)
     proc.exe(['pip', 'install'] + glob.glob('dist/*.tar.gz'))
     test(args)
+
 
 @command
 def initve(args):
@@ -184,7 +193,8 @@ def rve():
                 args.cfg['test.pylint'] = True
             elif fname.endswith('.feature'):
                 args.cfg['test.behave'] = True
-            elif fname.startswith('test_') and fname.endswith('.py'):
+
+            if fname.startswith('test_') and fname.endswith('.py'):
                 args.cfg['test.pytest'] = True
 
     args.func(args)

@@ -26,8 +26,10 @@ def read(*args, **kwargs):
 
 
 def exe(cmd, check_exit_code=True):
+    LOG.debug(cmd)
     proc = subprocess.Popen(cmd)
-    if check_exit_code and proc.wait() != 0:
+    if proc.wait() != 0 and check_exit_code:
         print 'executing ' + ' '.join(cmd), 'failed'
         sys.exit(proc.returncode)
+    return proc.returncode
 
