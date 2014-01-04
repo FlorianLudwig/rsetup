@@ -182,8 +182,8 @@ def ci(args):
 envlist = {}
 
 [testenv]
+deps = rsetup
 commands =
-  pip install -e /home/work/.virtualenvs/testit/src/rsetup
   rve setup --ci
   rve test --ci
 """.format(args.cfg['envlist']))
