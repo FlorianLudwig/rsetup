@@ -33,9 +33,10 @@ KNOWN = {
         'unzip': True,
         "post-setup": chmod_chromedriver
     },
+    # GeoLiteCity updates every month, to avoid redownloading it when there is no rsetup release we skip this
     'GeoLiteCity.dat': {
         'url': 'http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz',
-        'md5sum': 'fde6e82ee2411d67f2b9b03b75205dbd',
+        'md5sum': None,
         'unzip': True
     }
 }
