@@ -184,6 +184,7 @@ envlist = {}
 [testenv]
 deps = rsetup
 commands =
+  rve initve --ci
   rve setup --ci
   rve test --ci
 """.format(args.cfg['envlist']))
