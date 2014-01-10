@@ -232,6 +232,9 @@ os.execvpe(sys.argv[1], sys.argv[1:], os.environ)
     open(run_script_path, 'w').write(run_script)
     os.chmod(run_script_path, stat.S_IEXEC | stat.S_IREAD | stat.S_IWUSR)
 
+sdist.parser.add_argument('--ci', action='store_true',
+                          help='running in CI context')
+
 
 def rve():
     """rve command line tool entry point"""
