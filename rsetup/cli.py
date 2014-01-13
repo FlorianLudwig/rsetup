@@ -30,14 +30,29 @@ TEST_PKGS = ['GitPython==0.3.2.RC1',
 
 ARG_PARSER = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawTextHelpFormatter)
+
+
 SUB_PARSER = ARG_PARSER.add_subparsers(help='Command help')
+
 LOG = logging.getLogger(__name__)
+
+
+def shellquote(path):
+    """escape a path
+
+    :rtype str:"""
+    return "'" + path.replace("'", "'\\''") + "'"
 
 
 def command(func):
     """Decorator for CLI exposed functions"""
     func.parser = SUB_PARSER.add_parser(func.func_name, help=func.__doc__)
     func.parser.set_defaults(func=func)
+
+    # options for all commands
+    func.parser.add_argument('--ci', action='store_true',
+                             help='running in CI context')
+    func.parser.add_argument('--config', help='path to config', default='.')
     return func
 
 
@@ -68,6 +83,16 @@ def get_setup_data(path):
 
     setuptools.setup = old_setup
     return data
+
+
+def get_config_path(args):
+    """get the path of the config file if existent
+
+    :rtype: str
+    """
+    path = os.path.abspath(os.path.join(args.config, '.ci.yml'))
+    if os.path.exists(path):
+        return path
 
 
 def get_module_path(name):
@@ -103,9 +128,6 @@ def sdist(args):
     assert len(dist) == 1
     return os.path.abspath('dist/' + dist[0])
 
-sdist.parser.add_argument('--ci', action='store_true',
-                          help='running in CI context')
-
 
 @command
 def test(args):
@@ -139,9 +161,6 @@ def test(args):
         for path in args.cfg['test.behave.features']:
             proc.exe(['behave', path])
 
-test.parser.add_argument('--ci', action='store_true',
-                         help='running in CI context')
-
 
 @command
 def setup(args):
@@ -157,8 +176,6 @@ def setup(args):
         if not line.startswith('rsetup') or line.startswith('configobj'):
             before.write(line + '\n')
     before.close()
-setup.parser.add_argument('--ci', action='store_true',
-                          help='running in CI context')
 
 
 @command
@@ -167,9 +184,12 @@ def ci(args):
 
     # read config
     LOG.info('Working path %s', os.path.abspath('.'))
-    if os.path.exists('.ci.yml'):
-        LOG.info('loaded .ci.yml')
+    config_arg = ''
+    cfg = get_config_path(args)
+    if cfg:
+        LOG.info('loading {}'.format(cfg))
         args.cfg.update(yaml.load(open('.ci.yml')))
+        config_arg = '--config ' + shellquote(cfg)
 
     setup(args)
     dist = sdist(args)
@@ -179,15 +199,15 @@ def ci(args):
 
     tox = open('tox.ini', 'w')
     tox.write("""[tox]
-envlist = {}
+envlist = {envist}
 
 [testenv]
 deps = rsetup
 commands =
   rve initve --ci
-  rve setup --ci
-  rve test --ci
-""".format(args.cfg['envlist']))
+  rve setup --ci {config_arg}
+  rve test --ci {config_arg}
+""".format(envist=args.cfg['envlist'], config=config_arg))
     tox.close()
     proc.exe(['tox', '--installpkg', dist])
 
@@ -231,9 +251,6 @@ os.execvpe(sys.argv[1], sys.argv[1:], os.environ)
         os.unlink(run_script_path)
     open(run_script_path, 'w').write(run_script)
     os.chmod(run_script_path, stat.S_IEXEC | stat.S_IREAD | stat.S_IWUSR)
-
-initve.parser.add_argument('--ci', action='store_true',
-                          help='running in CI context')
 
 
 def rve():

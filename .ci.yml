@@ -1,1 +1,2 @@
 test.behave: False
+test.pytest: True
