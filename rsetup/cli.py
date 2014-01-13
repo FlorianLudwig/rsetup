@@ -207,7 +207,7 @@ commands =
   rve initve --ci
   rve setup --ci {config_arg}
   rve test --ci {config_arg}
-""".format(envist=args.cfg['envlist'], config=config_arg))
+""".format(envist=args.cfg['envlist'], config_arg=config_arg))
     tox.close()
     proc.exe(['tox', '--installpkg', dist])
 
