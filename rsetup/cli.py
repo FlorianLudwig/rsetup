@@ -209,7 +209,10 @@ commands =
   rve test --ci {config_arg}
 """.format(envist=args.cfg['envlist'], config_arg=config_arg))
     tox.close()
-    proc.exe(['tox', '--installpkg', dist])
+    #proc.exe(['tox', '--installpkg', dist])
+    initve(args)
+    setup(args)
+    test(args)
 
 
 def create_test_ve(args):
