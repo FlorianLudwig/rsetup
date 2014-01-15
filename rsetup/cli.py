@@ -193,7 +193,7 @@ def ci(args):
     dist = sdist(args)
 
     if os.path.exists('tox.ini'):
-        print ("package tox.ini cannot be handled at this time")
+        print("package tox.ini cannot be handled at this time")
 
     tox = open('tox.ini', 'w')
     tox.write("""[tox]
