@@ -52,7 +52,7 @@ def command(func):
     # options for all commands
     func.parser.add_argument('--ci', action='store_true',
                              help='running in CI context')
-    func.parser.add_argument('--config', help='path to config', default='.')
+    func.parser.add_argument('--config', help='path to config', default='.ci.yml')
     return func
 
 
@@ -90,7 +90,7 @@ def get_config_path(args):
 
     :rtype: str
     """
-    path = os.path.abspath(os.path.join(args.config, '.ci.yml'))
+    path = os.path.abspath('.ci.yml')
     if os.path.exists(path):
         return path
 
