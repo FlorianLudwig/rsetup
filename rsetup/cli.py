@@ -207,10 +207,15 @@ commands =
   rve test --ci {config_arg}
 """.format(envist=args.cfg['envlist'], config_arg=config_arg))
     tox.close()
-    #proc.exe(['tox', '--installpkg', dist])
-    initve(args)
-    setup(args)
-    test(args)
+    # delete tox dir if existent
+    if os.path.exists('.tox'):
+        shutil.rmtree('.tox')
+    proc.exe(['tox', '--installpkg', dist])
+
+    ## alternative to tox:
+    # initve(args)
+    # setup(args)
+    # test(args)
 
 
 def create_test_ve(args):
