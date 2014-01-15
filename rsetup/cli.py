@@ -187,8 +187,6 @@ def ci(args):
     config_arg = ''
     cfg = get_config_path(args)
     if cfg:
-        LOG.info('loading {}'.format(cfg))
-        args.cfg.update(yaml.load(open('.ci.yml')))
         config_arg = '--config ' + shellquote(cfg)
 
     setup(args)
@@ -202,7 +200,7 @@ def ci(args):
 envlist = {envist}
 
 [testenv]
-deps = rsetup
+deps = rsetup>0.0.0.git0
 commands =
   rve initve --ci
   rve setup --ci {config_arg}
@@ -280,5 +278,10 @@ def rve():
 
             if fname.startswith('test_') and fname.endswith('.py'):
                 args.cfg['test.pytest'] = True
+
+    cfg = get_config_path(args)
+    if cfg:
+        LOG.info('loading {}'.format(cfg))
+        args.cfg.update(yaml.load(open('.ci.yml')))
 
     args.func(args)
