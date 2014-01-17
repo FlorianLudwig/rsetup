@@ -20,8 +20,7 @@ from rsetup import proc, config
 
 PACKAGE_NAME = re.compile('[a-zA-Z0-9-_]{1,64}$')
 
-TEST_PKGS = ['GitPython==0.3.2.RC1',
-             'coverage==3.6',
+TEST_PKGS = ['coverage==3.6',
              'pytest-cov==1.6',
              'pylint==0.28.0',
              'behave==1.2.3',
@@ -41,7 +40,10 @@ LOG = logging.getLogger(__name__)
 
 
 def guess_current_branch():
-    from git import Repo  # GitPython must be installed
+    # make sure GitPython is installed
+    proc.exe(['pip', 'install', 'GitPython==0.3.2.RC1'])
+
+    from git import Repo
 
     repo = Repo()
     current_branch = []
@@ -197,7 +199,7 @@ def setup(args):
     pkgs = TEST_PKGS[:]
     if args.cfg['test.behave']:
         pkgs.append('rbehave>=0.0.0.git0')
-    p = subprocess.Popen(['pip', 'install', '-I'] + pkgs)
+    p = proc.exe(['pip', 'install', '-I'] + pkgs)
     p.wait()
 
 
@@ -232,7 +234,7 @@ def ci(args):
 
     deps = ''
     if name != 'rsetup':
-        # if we are not testing ourself right now install rsetup into test environment
+        # if we are not testing ourselves right now install rsetup into test environment
         deps = 'rsetup>0.0.0.git0'
 
     tox = open('tox.ini', 'w')
@@ -262,11 +264,11 @@ commands =
     # upload result to devpi
     if 'DEVPI_SERVER' in os.environ:
         LOG.info('uploading to devpi server')
-        subprocess.call(['devpi', 'use', os.environ['DEVPI_SERVER']])
-        subprocess.call(['devpi', 'login', os.environ['DEVPI_USER'], '--password', os.environ['DEVPI_PASSWORD']])
-        subprocess.call(['devpi', 'use', os.environ['DEVPI_INDEX']])
-        subprocess.call(['devpi', 'upload', '--from-dir', 'dist'])
-        subprocess.call(['devpi', 'upload', '--from-dir', 'wheelhouse'])
+        proc.exe(['devpi', 'use', os.environ['DEVPI_SERVER']])
+        proc.exe(['devpi', 'login', os.environ['DEVPI_USER'], '--password', os.environ['DEVPI_PASSWORD']])
+        proc.exe(['devpi', 'use', os.environ['DEVPI_INDEX']])
+        proc.exe(['devpi', 'upload', '--from-dir', 'dist'])
+        proc.exe(['devpi', 'upload', '--from-dir', 'wheelhouse'])
     else:
         LOG.info('DEVPI_SERVER environment variable not set. not uploading')
 
