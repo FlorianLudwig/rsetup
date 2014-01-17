@@ -335,9 +335,9 @@ def rve():
 
     # auto detect tests to run
     def walker(arg, dirpath, filenames):
-        for dirname in dirnames[:]:
+        for dirname in filenames[:]:
             if dirname.startswith('.'):
-                dirnames.remove(dirname)
+                filenames.remove(dirname)
 
         for fname in filenames:
             if fname.endswith('.py'):
