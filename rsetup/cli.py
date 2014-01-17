@@ -26,6 +26,9 @@ TEST_PKGS = ['GitPython==0.3.2.RC1',
              'pylint==0.28.0',
              'behave==1.2.3',
              'selenium==2.33.0',
+             'setuptools>=0.8',
+             'pip',
+             'wheel',
              'tox']
 
 ARG_PARSER = argparse.ArgumentParser(description=__doc__,
@@ -35,6 +38,31 @@ ARG_PARSER = argparse.ArgumentParser(description=__doc__,
 SUB_PARSER = ARG_PARSER.add_subparsers(help='Command help')
 
 LOG = logging.getLogger(__name__)
+
+
+def guess_current_branch():
+    from git import Repo  # GitPython must be installed
+
+    repo = Repo()
+    current_branch = []
+    for ref in repo.references:
+        if ref.commit == repo.head.commit:
+            try:
+                remote = ref.remote_name
+            except NameError:
+                continue
+            if remote == 'origin' and ref.name != 'origin/HEAD':
+                current_branch.append(ref.name[7:])
+    if len(current_branch) == 0:
+        return None
+    elif len(current_branch) == 1:
+        return current_branch[0]
+    else:
+        for preferred_branch in ('master', 'staging', 'production'):
+            for branch in current_branch:
+                if branch == preferred_branch:
+                    return branch
+        return sorted(current_branch, key=lambda b: b.name)[0]
 
 
 def shellquote(path):
@@ -162,25 +190,32 @@ def test(args):
             proc.exe(['behave', path])
 
 
+
+
 @command
 def setup(args):
     pkgs = TEST_PKGS[:]
     if args.cfg['test.behave']:
         pkgs.append('rbehave>=0.0.0.git0')
-    p = subprocess.Popen(['pip', 'install'] + pkgs)
+    p = subprocess.Popen(['pip', 'install', '-I'] + pkgs)
     p.wait()
-
-    pkgs = proc.read(['pip', 'freeze'])
-    before = open('pip_freeze_before_install.txt', 'w')
-    for line in pkgs.split('\n'):
-        if not line.startswith('rsetup') or line.startswith('configobj'):
-            before.write(line + '\n')
-    before.close()
 
 
 @command
 def ci(args):
     args.ci = True
+
+    # get info about package
+    name = subprocess.check_output(['python', 'setup.py', '--name'])
+    name = name.strip()
+    if not PACKAGE_NAME.match(name):
+        print 'invalid package name', name
+        sys.exit(1)
+
+    if args.branch:
+        branch = args.branch
+    else:
+        branch = guess_current_branch()
 
     # read config
     LOG.info('Working path %s', os.path.abspath('.'))
@@ -195,17 +230,24 @@ def ci(args):
     if os.path.exists('tox.ini'):
         print("package tox.ini cannot be handled at this time")
 
+    deps = ''
+    if name != 'rsetup':
+        # if we are not testing ourself right now install rsetup into test environment
+        deps = 'rsetup>0.0.0.git0'
+
     tox = open('tox.ini', 'w')
     tox.write("""[tox]
 envlist = {envist}
 
 [testenv]
-deps = rsetup>0.0.0.git0
+{deps}
 commands =
   rve initve --ci
   rve setup --ci {config_arg}
   rve test --ci {config_arg}
-""".format(envist=args.cfg['envlist'], config_arg=config_arg))
+  bash -c 'pip freeze > pypi-requirements.txt'
+  pip wheel -r pypi-requirements.txt
+""".format(deps=deps, envist=args.cfg['envlist'], config_arg=config_arg))
     tox.close()
     # delete tox dir if existent
     if os.path.exists('.tox'):
@@ -216,6 +258,23 @@ commands =
     # initve(args)
     # setup(args)
     # test(args)
+
+    # upload result to devpi
+    if 'DEVPI_SERVER' in os.environ:
+        LOG.info('uploading to devpi server')
+        subprocess.call(['devpi', 'use', os.environ['DEVPI_SERVER']])
+        subprocess.call(['devpi', 'login', os.environ['DEVPI_USER'], '--password', os.environ['DEVPI_PASSWORD']])
+        subprocess.call(['devpi', 'use', os.environ['DEVPI_INDEX']])
+        subprocess.call(['devpi', 'upload', '--from-dir', 'dist'])
+        subprocess.call(['devpi', 'upload', '--from-dir', 'wheelhouse'])
+    else:
+        LOG.info('DEVPI_SERVER environment variable not set. not uploading')
+
+    if os.path.exists('/srv/pypi-requirements/'):
+        LOG.info('updating requirements-txt.r0k.de')
+        shutil.copy('pypi-requirements.txt', '/srv/pypi-requirements/{}.{}.txt'.format(name, branch))
+
+ci.parser.add_argument('--branch', help='branch name we are running on')
 
 
 def create_test_ve(args):
