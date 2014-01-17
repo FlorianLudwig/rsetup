@@ -232,7 +232,7 @@ def ci(args):
     deps = ''
     if name != 'rsetup':
         # if we are not testing ourselves right now install rsetup into test environment
-        deps = 'rsetup>0.0.0.git0'
+        deps = 'deps: rsetup>0.0.0.git0'
 
     tox = open('tox.ini', 'w')
     tox.write("""[tox]
