@@ -199,8 +199,7 @@ def setup(args):
     pkgs = TEST_PKGS[:]
     if args.cfg['test.behave']:
         pkgs.append('rbehave>=0.0.0.git0')
-    p = proc.exe(['pip', 'install', '-I'] + pkgs)
-    p.wait()
+    proc.exe(['pip', 'install', '-I'] + pkgs)
 
 
 @command
