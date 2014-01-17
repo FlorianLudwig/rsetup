@@ -334,7 +334,11 @@ def rve():
                 }
 
     # auto detect tests to run
-    for dirpath, dirnames, filenames in os.walk('.'):
+    def walker(arg, dirpath, filenames):
+        for dirname in dirnames[:]:
+            if dirname.startswith('.'):
+                dirnames.remove(dirname)
+
         for fname in filenames:
             if fname.endswith('.py'):
                 args.cfg['test.pylint'] = True
@@ -344,6 +348,8 @@ def rve():
 
             if fname.startswith('test_') and fname.endswith('.py'):
                 args.cfg['test.pytest'] = True
+
+    os.path.walk('.', walker, None)
 
     cfg = get_config_path(args)
     if cfg:
