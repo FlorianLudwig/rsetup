@@ -192,8 +192,6 @@ def test(args):
             proc.exe(['behave', path])
 
 
-
-
 @command
 def setup(args):
     pkgs = TEST_PKGS[:]
@@ -247,7 +245,6 @@ commands =
   rve setup --ci {config_arg}
   rve test --ci {config_arg}
   bash -c 'pip freeze > pypi-requirements.txt'
-  pip wheel -r pypi-requirements.txt
 """.format(deps=deps, envist=args.cfg['envlist'], config_arg=config_arg))
     tox.close()
     # delete tox dir if existent
@@ -267,6 +264,7 @@ commands =
         proc.exe(['devpi', 'login', os.environ['DEVPI_USER'], '--password', os.environ['DEVPI_PASSWORD']])
         proc.exe(['devpi', 'use', os.environ['DEVPI_INDEX']])
         proc.exe(['devpi', 'upload', '--from-dir', 'dist'])
+        proc.exe(['pip', 'wheel', '-r', 'pypi-requirements.txt'])
         proc.exe(['devpi', 'upload', '--from-dir', 'wheelhouse'])
     else:
         LOG.info('DEVPI_SERVER environment variable not set. not uploading')
