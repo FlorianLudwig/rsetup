@@ -172,15 +172,21 @@ def test(args):
 
     if args.cfg['test.pytest']:
         LOG.info('running py.test')
-        for pkg in pkgs:
-            py_test = ['py.test', '--cov', pkg]
-            if args.ci:
-                py_test += ['--cov-report', 'xml', '--junitxml=junit.xml']
-            py_test.append(pkg)
 
-            proc.exe(py_test)
+        py_test = ['py.test']
+        for pkg in pkgs:
+            py_test.extend(('--cov', pkg))
+
         if args.ci:
-            proc.exe(['coverage', 'html'])
+            py_test += ['--cov-report', 'xml', '--junitxml=junit.xml']
+
+        py_test.extend(pkgs)
+
+        LOG.info('starting' + repr(py_test))
+        proc.exe(py_test)
+
+    if args.ci:
+        proc.exe(['coverage', 'html'])
 
     if args.cfg['test.pylint']:
         LOG.info('running pylint')
