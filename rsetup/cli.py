@@ -161,6 +161,10 @@ def sdist(args):
 
 @command
 def test(args):
+    # save state of virtualenv on testing start
+    freeze = subprocess.check_output(['pip', 'freeze'])
+    open('.rve-pip-freeze.txt', 'w').write(freeze)
+
     setup_data = get_setup_data('setup.py')
     pkgs = setup_data['packages']
     pkgs = set(pkg.split('.')[0] for pkg in pkgs)
@@ -190,6 +194,7 @@ def test(args):
         LOG.info('running behave')
         for path in args.cfg['test.behave.features']:
             proc.exe(['behave', path])
+
 
 
 @command
@@ -244,7 +249,6 @@ commands =
   rve initve --ci
   rve setup --ci {config_arg}
   rve test --ci {config_arg}
-  bash -c 'pip freeze > pypi-requirements.txt'
 """.format(deps=deps, envist=args.cfg['envlist'], config_arg=config_arg))
     tox.close()
     # delete tox dir if existent
@@ -257,6 +261,9 @@ commands =
     # setup(args)
     # test(args)
 
+    # TODO
+    # there will be more than one .rve-pip-freeze.txt be created if we run tox on multiple python versions
+
     # upload result to devpi
     if 'DEVPI_SERVER' in os.environ:
         LOG.info('uploading to devpi server')
@@ -264,14 +271,14 @@ commands =
         proc.exe(['devpi', 'login', os.environ['DEVPI_USER'], '--password', os.environ['DEVPI_PASSWORD']])
         proc.exe(['devpi', 'use', os.environ['DEVPI_INDEX']])
         proc.exe(['devpi', 'upload', '--from-dir', 'dist'])
-        proc.exe(['pip', 'wheel', '-r', 'pypi-requirements.txt'])
+        proc.exe(['pip', 'wheel', '-r', '.rve-pip-freeze.txt'])
         proc.exe(['devpi', 'upload', '--from-dir', 'wheelhouse'])
     else:
         LOG.info('DEVPI_SERVER environment variable not set. not uploading')
 
     if os.path.exists('/srv/pypi-requirements/'):
         LOG.info('updating requirements-txt.r0k.de')
-        shutil.copy('pypi-requirements.txt', '/srv/pypi-requirements/{}.{}.txt'.format(name, branch))
+        shutil.copy('.rve-pip-freeze.txt', '/srv/pypi-requirements/{}.{}.txt'.format(name, branch))
 
 ci.parser.add_argument('--branch', help='branch name we are running on')
 
