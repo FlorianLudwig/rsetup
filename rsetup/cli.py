@@ -185,8 +185,8 @@ def test(args):
         LOG.info('starting' + repr(py_test))
         proc.exe(py_test)
 
-    if args.ci:
-        proc.exe(['coverage', 'html'])
+        if args.ci:
+            proc.exe(['coverage', 'html'])
 
     if args.cfg['test.pylint']:
         LOG.info('running pylint')
