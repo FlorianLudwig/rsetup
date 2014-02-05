@@ -251,11 +251,12 @@ envlist = {envist}
 
 [testenv]
 {deps}
+sitepackages = {sitepackages}
 commands =
   rve initve --ci
   rve setup --ci {config_arg}
   rve test --ci {config_arg}
-""".format(deps=deps, envist=args.cfg['envlist'], config_arg=config_arg))
+""".format(sitepackages=args.cfg['tox.sitepackages'], deps=deps, envist=args.cfg['envlist'], config_arg=config_arg))
     tox.close()
     # delete tox dir if existent
     if os.path.exists('.tox'):
@@ -343,6 +344,7 @@ def rve():
     args.cfg = {'test.pytest': False,
                 'test.pylint': False,
                 'test.behave': False,
+                'tox.sitepackages': False,
                 'test.behave.features': set(),
                 'envlist': 'py27'
                 }
