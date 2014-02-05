@@ -273,6 +273,7 @@ commands =
     # upload result to devpi
     if 'DEVPI_SERVER' in os.environ:
         LOG.info('uploading to devpi server')
+        proc.exe(['pip', 'install', '-U', 'devpi-client'])
         proc.exe(['devpi', 'use', os.environ['DEVPI_SERVER']])
         proc.exe(['devpi', 'login', os.environ['DEVPI_USER'], '--password', os.environ['DEVPI_PASSWORD']])
         proc.exe(['devpi', 'use', os.environ['DEVPI_INDEX']])
