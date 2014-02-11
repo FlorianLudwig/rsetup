@@ -38,8 +38,10 @@ def sdist_with_version_suffic(suffix):
             sdist.make_release_tree(self, base_dir, files)
             # make sure we include the git version in the release
             setup_py = open(base_dir + '/setup.py').read()
+            setup_py = setup_py.replace('\r\n', '\n')
             if not "\nVERSION_SUFFIX = ''\n" in setup_py:
                 raise Exception('Variable for version suffix is missing.')
+
             os.unlink(base_dir + '/setup.py')
             setup_py = setup_py.replace("\nVERSION_SUFFIX = ''\n", "\nVERSION_SUFFIX = {}\n".format(repr(suffix)))
             f = open(base_dir + '/setup.py', 'w')
