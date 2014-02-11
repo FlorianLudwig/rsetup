@@ -162,7 +162,7 @@ def sdist(args):
 @command
 def test(args):
     # save state of virtualenv on testing start
-    freeze = subprocess.check_output(['pip', 'freeze'])
+    freeze = subprocess.check_output(['pip', 'freeze', '--local'])
     open('.rve-pip-freeze.txt', 'w').write(freeze)
 
     setup_data = get_setup_data('setup.py')
@@ -370,6 +370,7 @@ def rve():
     cfg = get_config_path(args)
     if cfg:
         LOG.info('loading {}'.format(cfg))
-        args.cfg.update(yaml.load(open('.ci.yml')))
+        local_conf = yaml.load(open('.ci.yml'))
+        args.cfg.update(local_conf)
 
     args.func(args)
