@@ -70,6 +70,7 @@ def get(target):
         else:
             return return_path
 
+    LOG.info("Downloading: %s", target['url'])
     data = urllib2.urlopen(target['url'])
     shutil.copyfileobj(data, open(cache_path, 'w'))
 
