@@ -285,8 +285,9 @@ commands =
         LOG.info('DEVPI_SERVER environment variable not set. not uploading')
 
     if os.path.exists('/srv/pypi-requirements/'):
-        LOG.info('updating requirements-txt.r0k.de')
-        shutil.copy('.rve-pip-freeze.txt', '/srv/pypi-requirements/{}.{}.txt'.format(name, branch))
+        fname = '{}.{}.txt'.format(name, branch)
+        LOG.info('updating requirements-txt.r0k.de/' + fname)
+        shutil.copy('.rve-pip-freeze.txt', '/srv/pypi-requirements/' + fname)
 
 ci.parser.add_argument('--branch', help='branch name we are running on')
 
