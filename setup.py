@@ -19,7 +19,7 @@ setup(
     version='0.0.1' + VERSION_SUFFIX,
     author='Grey Rook Entertainment',
     packages=find_packages(),
-    install_requires=['configobj', 'PyYaml', 'GitPython==0.3.2.RC1'],
+    install_requires=['configobj', 'PyYaml', 'GitPython==0.3.2.RC1', 'fpt'],
     entry_points={
         'console_scripts': [
             'rve = rsetup.cli:rve',

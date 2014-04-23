@@ -8,13 +8,12 @@ import logging
 import argparse
 import glob
 import shutil
-import subprocess as sp
-import imp
 import stat
 
 import yaml
-import setuptools
 import subprocess
+import fpt
+
 from rsetup import proc, config
 
 
@@ -86,35 +85,6 @@ def command(func):
     return func
 
 
-def get_setup_data(path):
-    """get the arguments of setup() call inside a setup.py by fake loading it
-
-    The only way to get data out of a setup.py is by executing it.  The setuptools
-    is mocked to extract the desired information
-
-    :param path: path to the setup.py file
-    :type path: str
-    :rtype: dict
-    """
-    data = {}
-
-    old_setup = setuptools.setup
-    old_modules = sys.modules.keys()
-
-    def s(**kwargs):
-        data.update(kwargs)
-
-    setuptools.setup = s
-    imp.load_source('fake-load-setup-py', path)
-
-    for module in sys.modules.keys():
-        if module not in old_modules:
-            del sys.modules[module]
-
-    setuptools.setup = old_setup
-    return data
-
-
 def get_config_path(args):
     """get the path of the config file if existent
 
@@ -165,7 +135,7 @@ def test(args):
     freeze = subprocess.check_output(['pip', 'freeze', '--local'])
     open('.rve-pip-freeze.txt', 'w').write(freeze)
 
-    setup_data = get_setup_data('setup.py')
+    setup_data = fpt.get_setup_data('setup.py')
     pkgs = setup_data['packages']
     pkgs = set(pkg.split('.')[0] for pkg in pkgs)
     pkgs = list(pkgs)
@@ -200,7 +170,6 @@ def test(args):
         LOG.info('running behave')
         for path in args.cfg['test.behave.features']:
             proc.exe(['behave', path])
-
 
 
 @command
@@ -255,13 +224,20 @@ sitepackages = {sitepackages}
 commands =
   rve initve --ci
   rve setup --ci {config_arg}
+  pip install 'file://{path}#egg={name}[test]'
   rve test --ci {config_arg}
-""".format(sitepackages=args.cfg['tox.sitepackages'], deps=deps, envist=args.cfg['envlist'], config_arg=config_arg))
+""".format(
+        sitepackages=args.cfg['tox.sitepackages'],
+        deps=deps,
+        envist=args.cfg['envlist'],
+        config_arg=config_arg,
+        path=dist,
+        name=name))
     tox.close()
     # delete tox dir if existent
     if os.path.exists('.tox'):
         shutil.rmtree('.tox')
-    proc.exe(['tox', '--installpkg', dist])
+    proc.exe(['tox'])
 
     ## alternative to tox:
     # initve(args)
