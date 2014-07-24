@@ -46,7 +46,7 @@ def guess_current_branch():
         return os.environ['CI_BUILD_REF_NAME']
 
     # make sure GitPython is installed
-    proc.exe(['pip', 'install', 'GitPython==0.3.2.RC1'])
+    # proc.exe(['pip', 'install', 'GitPython==0.3.2.RC1'])
 
     from git import Repo
 
@@ -229,7 +229,6 @@ envlist = {envist}
 {deps}
 sitepackages = {sitepackages}
 commands =
-  rve initve --ci
   rve setup --ci {config_arg}
   pip install 'file://{path}#egg={name}[test]'
   rve test --ci {config_arg}
@@ -257,7 +256,7 @@ commands =
     # upload result to devpi
     if 'DEVPI_SERVER' in os.environ:
         LOG.info('uploading to devpi server')
-        proc.exe(['pip', 'install', '-U', 'devpi-client==1.2.1'])
+        # proc.exe(['pip', 'install', '-U', 'devpi-client==1.2.1'])
         proc.exe(['devpi', 'use', os.environ['DEVPI_SERVER']])
         proc.exe(['devpi', 'login', os.environ['DEVPI_USER'], '--password', os.environ['DEVPI_PASSWORD']])
         proc.exe(['devpi', 'use', os.environ['DEVPI_INDEX']])
