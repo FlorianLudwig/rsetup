@@ -19,15 +19,17 @@ from rsetup import proc, config
 
 PACKAGE_NAME = re.compile('[a-zA-Z0-9-_]{1,64}$')
 
-TEST_PKGS = ['coverage==3.6',
-             'pytest-cov==1.6',
-             'pylint==0.28.0',
-             'behave==1.2.3',
-             'selenium==2.33.0',
+TEST_PKGS = [
              'setuptools>=0.8',
              'pip',
-             'wheel',
-             'tox']
+             'wheel'
+]
+
+# 'coverage==3.6',
+# 'pytest-cov==1.6',
+# 'pylint==0.28.0',
+# 'behave==1.2.3',
+# 'selenium==2.33.0',
 
 ARG_PARSER = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawTextHelpFormatter)
@@ -178,9 +180,10 @@ def test(args):
 
 @command
 def setup(args):
+    # ensure we have tox installed
     pkgs = TEST_PKGS[:]
-    if args.cfg['test.behave']:
-        pkgs.append('rbehave>=0.0.0.git0')
+    # if args.cfg['test.behave']:
+    #     pkgs.append('rbehave>=0.0.0.git0')
     proc.exe(['pip', 'install', '-I'] + pkgs)
 
 
@@ -207,7 +210,7 @@ def ci(args):
     if cfg:
         config_arg = '--config ' + shellquote(cfg)
 
-    setup(args)
+    # setup(args)
     dist = sdist(args)
 
     if os.path.exists('tox.ini'):
@@ -254,7 +257,7 @@ commands =
     # upload result to devpi
     if 'DEVPI_SERVER' in os.environ:
         LOG.info('uploading to devpi server')
-        proc.exe(['pip', 'install', '-U', 'devpi-client'])
+        proc.exe(['pip', 'install', '-U', 'devpi-client==1.2.1'])
         proc.exe(['devpi', 'use', os.environ['DEVPI_SERVER']])
         proc.exe(['devpi', 'login', os.environ['DEVPI_USER'], '--password', os.environ['DEVPI_PASSWORD']])
         proc.exe(['devpi', 'use', os.environ['DEVPI_INDEX']])
