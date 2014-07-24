@@ -23,6 +23,8 @@ setup(
     entry_points={
         'console_scripts': [
             'rve = rsetup.cli:rve',
+            'tox=tox:cmdline',
+            'tox-quickstart=tox._quickstart:main'
         ],
     },
     cmdclass={'sdist': rsetup.setup.sdist_with_version_suffic(VERSION_SUFFIX)}
