@@ -321,6 +321,7 @@ class VirtualEnv(object):
         if setenv:
             env.update(setenv)
         env.update(extraenv)
+        env['VIRTUAL_ENV'] = str(self.path)
         return env
 
     def test(self, redirect=False):
