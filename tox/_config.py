@@ -513,10 +513,7 @@ class IniReader:
         current_command = ""
         for line in s.split("\n"):
             line = line.rstrip()
-            i = line.find("#")
-            if i != -1:
-                line = line[:i].rstrip()
-            if not line:
+            if line.startswith('#'):
                 continue
             if line.endswith("\\"):
                 current_command += " " + line[:-1]
