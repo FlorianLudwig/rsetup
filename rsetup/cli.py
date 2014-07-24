@@ -39,6 +39,10 @@ LOG = logging.getLogger(__name__)
 
 
 def guess_current_branch():
+    # check for gitlab ci variable
+    if 'CI_BUILD_REF_NAME' in os.environ:
+        return os.environ['CI_BUILD_REF_NAME']
+
     # make sure GitPython is installed
     proc.exe(['pip', 'install', 'GitPython==0.3.2.RC1'])
 
