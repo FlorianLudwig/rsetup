@@ -253,7 +253,11 @@ commands =
     # TODO
     # there will be more than one .rve-pip-freeze.txt be created if we run tox on multiple python versions
 
-    # upload result to devpi
+    ## upload result to devpi
+    # on the ci the virtualenv containing rve might be read-only
+    # the default build path (<venvpath>/build) is read-only
+    # in this case as well so we specify an alternative build path
+    build_dir = tempfile.mkdtemp('pip_build_')
     if 'DEVPI_SERVER' in os.environ:
         LOG.info('uploading to devpi server')
         # proc.exe(['pip', 'install', '-U', 'devpi-client==1.2.1'])
@@ -261,7 +265,8 @@ commands =
         proc.exe(['devpi', 'login', os.environ['DEVPI_USER'], '--password', os.environ['DEVPI_PASSWORD']])
         proc.exe(['devpi', 'use', os.environ['DEVPI_INDEX']])
         proc.exe(['devpi', 'upload', '--from-dir', 'dist'])
-        proc.exe(['pip', 'wheel', '-r', '.rve-pip-freeze.txt'])
+        proc.exe(['pip', 'wheel', '-r', '.rve-pip-freeze.txt',
+                                  '-b', build_dir])
         proc.exe(['devpi', 'upload', '--from-dir', 'wheelhouse'])
     else:
         LOG.info('DEVPI_SERVER environment variable not set. not uploading')
