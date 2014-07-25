@@ -22,12 +22,14 @@ PACKAGE_NAME = re.compile('[a-zA-Z0-9-_]{1,64}$')
 TEST_PKGS = [
              'setuptools>=0.8',
              'pip',
-             'wheel'
+             'pylint==0.28.0',
+             'pytest-cov==1.6',
+             'pytest',
 ]
 
 # 'coverage==3.6',
-# 'pytest-cov==1.6',
-# 'pylint==0.28.0',
+#
+#
 # 'behave==1.2.3',
 # 'selenium==2.33.0',
 
@@ -253,7 +255,10 @@ commands =
             # if we are not inside a "upload-branch" we default to "master" since
             # we probably are inside a dev-branch
             devpi_branch = 'master'
-        tox.extend(['-i', 'ci/' + devpi_branch])
+        tox.extend(['--set-home', '-i', '{}/{}/+simple'.format(
+            os.environ['DEVPI_SERVER'].rstrip('/ '),
+            'ci/' + devpi_branch
+        )])
     proc.exe(tox)
 
     ## alternative to tox:
