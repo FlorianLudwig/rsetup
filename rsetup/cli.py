@@ -243,7 +243,18 @@ commands =
     # delete tox dir if existent
     if os.path.exists('.tox'):
         shutil.rmtree('.tox')
-    proc.exe(['tox'])
+    tox = ['tox']
+
+    # if we are going to upload the result make sure we build with the same index
+    # we are going to upload to
+    if 'DEVPI_SERVER' in os.environ:
+        devpi_branch = branch
+        if devpi_branch not in ('master', 'staging', 'production'):
+            # if we are not inside a "upload-branch" we default to "master" since
+            # we probably are inside a dev-branch
+            devpi_branch = 'master'
+        tox.extend(['-i', 'ci/' + devpi_branch])
+    proc.exe(tox)
 
     ## alternative to tox:
     # initve(args)
