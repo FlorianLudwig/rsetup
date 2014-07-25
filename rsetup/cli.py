@@ -265,9 +265,9 @@ commands =
         proc.exe(['devpi', 'login', os.environ['DEVPI_USER'], '--password', os.environ['DEVPI_PASSWORD']])
         proc.exe(['devpi', 'use', os.environ['DEVPI_INDEX']])
         proc.exe(['devpi', 'upload', '--from-dir', 'dist'])
-        proc.exe(['pip', 'wheel', '-r', '.rve-pip-freeze.txt',
-                                  '-b', build_dir])
-        proc.exe(['devpi', 'upload', '--from-dir', 'wheelhouse'])
+        # proc.exe(['pip', 'wheel', '-r', '.rve-pip-freeze.txt',
+        #                           '-b', build_dir])
+        # proc.exe(['devpi', 'upload', '--from-dir', 'wheelhouse'])
     else:
         LOG.info('DEVPI_SERVER environment variable not set. not uploading')
 
